@@ -3,27 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World</title>
+  <title>Playable Studio — Builders</title>
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
     body {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: #fff;
     }
     h1 {
-      font-size: 4rem;
-      margin: 0;
+      font-size: 2.5rem;
+      margin: 0 0 0.5rem;
+      text-align: center;
+    }
+    p.subtitle {
+      margin: 0 0 2.5rem;
+      opacity: 0.85;
+      text-align: center;
+    }
+    .cards {
+      display: grid;
+      gap: 1.25rem;
+      width: 100%;
+      max-width: 720px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    a.card {
+      display: block;
+      padding: 1.5rem 1.75rem;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      text-decoration: none;
+      backdrop-filter: blur(6px);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    a.card:hover {
+      transform: translateY(-4px);
+      background: rgba(255, 255, 255, 0.22);
+    }
+    a.card .title {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    a.card .desc {
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+    footer {
+      margin-top: 3rem;
+      font-size: 0.85rem;
+      opacity: 0.6;
     }
   </style>
 </head>
 <body>
-  <h1>Hello World 👋</h1>
+  <h1>Playable Studio</h1>
+  <p class="subtitle">Playable ad builders</p>
+
+  <div class="cards">
+    <a class="card" href="builders/ho2-playable-builder.html">
+      <div class="title">HO2 Playable Builder</div>
+      <div class="desc">Hidden Objects 2 — playable ad builder</div>
+    </a>
+    <a class="card" href="builders/zombie-warriors-playable-builder.html">
+      <div class="title">Zombie Warriors Playable Builder</div>
+      <div class="desc">Zombie Warriors — playable ad builder</div>
+    </a>
+  </div>
+
+  <footer>Marketing Tools · Playable Studio</footer>
 </body>
 </html>
