@@ -56,6 +56,20 @@ export async function uploadPage(server, { filename, title, folder, contentBase6
   return data.page;
 }
 
+export async function renamePage(server, file, title) {
+  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
+    body: JSON.stringify({ title }),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || "HTTP " + res.status);
+  }
+  const data = await res.json();
+  return data.page;
+}
+
 export async function movePage(server, file, folder) {
   const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
     method: "PATCH",

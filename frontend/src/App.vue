@@ -21,6 +21,12 @@
           <button class="crumb" @click="currentFolder = null">Builders</button>
           <span class="crumb-sep">/</span>
           <h2>{{ currentFolder }}</h2>
+          <button class="icon-btn head-rename" title="Переименовать папку" @click="openRenameFolder(currentFolder)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+            </svg>
+          </button>
           <span class="count">{{ visiblePages.length }}</span>
         </template>
         <template v-else>
@@ -46,6 +52,7 @@
           :page="p"
           @open="openViewer(p)"
           @move="openMove(p)"
+          @rename="openRenameFile(p)"
           @remove="removePage(p)"
           @dragstart="draggedPage = p"
           @dragend="draggedPage = null"
@@ -76,6 +83,14 @@
     @close="moving = null"
     @moved="onMoved"
   />
+  <RenameModal
+    v-if="renaming"
+    :heading="renaming.heading"
+    :label="renaming.label"
+    :initial="renaming.initial"
+    @close="renaming = null"
+    @save="onRename"
+  />
   <SettingsModal
     v-if="showSettings"
     :current="server"
@@ -98,6 +113,7 @@ import FolderCard from "./components/FolderCard.vue";
 import UploadCard from "./components/UploadCard.vue";
 import UploadModal from "./components/UploadModal.vue";
 import MoveModal from "./components/MoveModal.vue";
+import RenameModal from "./components/RenameModal.vue";
 import SettingsModal from "./components/SettingsModal.vue";
 import PageViewer from "./components/PageViewer.vue";
 import * as api from "./api.js";
@@ -109,6 +125,7 @@ const showUpload = ref(false);
 const showSettings = ref(false);
 const pendingFile = ref(null);
 const moving = ref(null);
+const renaming = ref(null);
 const currentFolder = ref(null);
 const draggedPage = ref(null);
 const viewer = ref({ open: false, title: "", blobUrl: "", loading: false });
@@ -180,6 +197,45 @@ async function onUploaded() {
 
 function openMove(p) {
   moving.value = p;
+}
+
+function openRenameFile(p) {
+  renaming.value = {
+    kind: "file",
+    page: p,
+    heading: "Переименовать билдер",
+    label: "Название",
+    initial: p.title || p.file,
+  };
+}
+function openRenameFolder(name) {
+  renaming.value = {
+    kind: "folder",
+    folder: name,
+    heading: "Переименовать папку",
+    label: "Название папки",
+    initial: name,
+  };
+}
+async function onRename(newValue) {
+  const r = renaming.value;
+  if (!r) return;
+  try {
+    if (r.kind === "file") {
+      await api.renamePage(server.value, r.page.file, newValue);
+      status.value = "Переименовано.";
+    } else {
+      // Rename a folder = reassign every page inside it to the new folder name.
+      const inFolder = pages.value.filter((p) => folderOf(p) === r.folder);
+      for (const p of inFolder) await api.movePage(server.value, p.file, newValue);
+      if (currentFolder.value === r.folder) currentFolder.value = newValue;
+      status.value = "Папка переименована.";
+    }
+    renaming.value = null;
+    await load();
+  } catch (e) {
+    status.value = "⚠️ Не удалось переименовать: " + e.message;
+  }
 }
 async function onMoved() {
   moving.value = null;

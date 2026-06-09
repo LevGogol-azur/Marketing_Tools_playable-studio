@@ -114,6 +114,8 @@ body::before {
 }
 .crumb:hover { color: var(--text); }
 .crumb-sep { color: var(--text-faint); }
+.head-rename { background: transparent; width: 1.5rem; height: 1.5rem; }
+.head-rename:hover { background: var(--surface-2); }
 
 /* ---- Cards grid ---- */
 .cards {

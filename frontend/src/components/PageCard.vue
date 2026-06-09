@@ -12,6 +12,12 @@
       <div class="card-meta">Открыть →</div>
     </div>
     <div class="card-actions">
+      <button class="icon-btn" title="Переименовать" aria-label="Переименовать" @click.stop="$emit('rename')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+        </svg>
+      </button>
       <button class="icon-btn" title="Переместить в папку" aria-label="Переместить" @click.stop="$emit('move')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
@@ -27,7 +33,7 @@
 import { computed } from "vue";
 
 const props = defineProps({ page: { type: Object, required: true } });
-defineEmits(["open", "remove", "move", "dragstart", "dragend"]);
+defineEmits(["open", "remove", "move", "rename", "dragstart", "dragend"]);
 
 const initials = computed(() => {
   const name = (props.page.title || props.page.file || "?").trim();
