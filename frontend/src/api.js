@@ -92,15 +92,39 @@ export async function deletePage(server, file) {
   if (!res.ok) throw new Error("HTTP " + res.status);
 }
 
+// Session cache of fetched playables. Filenames are unique and never overwritten,
+// so a blob URL stays valid for the whole session — re-opening is instant.
+const blobCache = new Map(); // file -> blobUrl
+const inflight = new Map(); // file -> Promise<blobUrl>
+
 // Fetch a page with the skip-warning header and return a blob URL (iframe nav can't set headers).
 export async function fetchPageBlobUrl(server, file) {
-  const res = await fetch(server + "/pages/" + encodeURIComponent(file), {
-    headers: NGROK_HEADERS,
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error("HTTP " + res.status);
-  const blob = await res.blob();
-  return URL.createObjectURL(blob);
+  if (blobCache.has(file)) return blobCache.get(file);
+  if (inflight.has(file)) return inflight.get(file);
+
+  const p = (async () => {
+    const res = await fetch(server + "/pages/" + encodeURIComponent(file), {
+      headers: NGROK_HEADERS,
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    blobCache.set(file, url);
+    return url;
+  })();
+
+  inflight.set(file, p);
+  try {
+    return await p;
+  } finally {
+    inflight.delete(file);
+  }
+}
+
+// Warm the cache ahead of a click (e.g. on hover). Fire-and-forget.
+export function prefetchPage(server, file) {
+  if (!server || blobCache.has(file) || inflight.has(file)) return;
+  fetchPageBlobUrl(server, file).catch(() => {});
 }
 
 export function fileToBase64(file) {

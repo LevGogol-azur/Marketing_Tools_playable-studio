@@ -3,6 +3,8 @@
     class="card"
     draggable="true"
     @click="$emit('open')"
+    @mouseenter="onEnter"
+    @mouseleave="onLeave"
     @dragstart="$emit('dragstart')"
     @dragend="$emit('dragend')"
   >
@@ -33,7 +35,19 @@
 import { computed } from "vue";
 
 const props = defineProps({ page: { type: Object, required: true } });
-defineEmits(["open", "remove", "move", "rename", "dragstart", "dragend"]);
+const emit = defineEmits(["open", "remove", "move", "rename", "prefetch", "dragstart", "dragend"]);
+
+// Prefetch on a deliberate hover (not a quick pass-through).
+let hoverTimer = null;
+function onEnter() {
+  hoverTimer = setTimeout(() => emit("prefetch"), 120);
+}
+function onLeave() {
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+}
 
 const initials = computed(() => {
   const name = (props.page.title || props.page.file || "?").trim();

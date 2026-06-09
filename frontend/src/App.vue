@@ -54,6 +54,7 @@
           @move="openMove(p)"
           @rename="openRenameFile(p)"
           @remove="removePage(p)"
+          @prefetch="onPrefetch(p)"
           @dragstart="draggedPage = p"
           @dragend="draggedPage = null"
         />
@@ -129,8 +130,6 @@ const renaming = ref(null);
 const currentFolder = ref(null);
 const draggedPage = ref(null);
 const viewer = ref({ open: false, title: "", blobUrl: "", loading: false });
-
-let currentBlob = null;
 
 const folderOf = (p) => (p.folder || "").trim();
 
@@ -268,12 +267,15 @@ async function removePage(p) {
   }
 }
 
+function onPrefetch(p) {
+  api.prefetchPage(server.value, p.file);
+}
+
 async function openViewer(p) {
   viewer.value = { open: true, title: p.title || p.file, blobUrl: "", loading: true };
   try {
-    if (currentBlob) URL.revokeObjectURL(currentBlob);
-    currentBlob = await api.fetchPageBlobUrl(server.value, p.file);
-    viewer.value.blobUrl = currentBlob;
+    // Blob URLs are cached for the session by api.js, so re-opening is instant.
+    viewer.value.blobUrl = await api.fetchPageBlobUrl(server.value, p.file);
   } catch (e) {
     status.value = "⚠️ Не удалось открыть страницу: " + e.message;
     viewer.value = { open: false, title: "", blobUrl: "", loading: false };
@@ -283,10 +285,6 @@ async function openViewer(p) {
 }
 function closeViewer() {
   viewer.value = { open: false, title: "", blobUrl: "", loading: false };
-  if (currentBlob) {
-    URL.revokeObjectURL(currentBlob);
-    currentBlob = null;
-  }
 }
 
 function openSettings() {

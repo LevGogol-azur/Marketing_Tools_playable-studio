@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import compression from "compression";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -16,6 +17,7 @@ if (!fs.existsSync(MANIFEST)) {
 }
 
 const app = express();
+app.use(compression()); // gzip responses (playables are large, mostly text)
 app.use(cors()); // allow the GitHub Pages origin (and any other) to call this server
 app.use(express.json({ limit: "60mb" })); // playables can be large
 
@@ -123,9 +125,11 @@ app.delete("/api/pages/:file", (req, res) => {
 });
 
 // --- Serve the stored playable pages ---
+// Filenames are unique and never overwritten, so contents are effectively
+// immutable per name — let the browser cache them.
 app.use(
   "/pages",
-  express.static(PAGES_DIR, { extensions: ["html"], dotfiles: "ignore" })
+  express.static(PAGES_DIR, { extensions: ["html"], dotfiles: "ignore", maxAge: "7d" })
 );
 
 app.get("/", (_req, res) => {
