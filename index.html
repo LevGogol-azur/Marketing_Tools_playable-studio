@@ -11,23 +11,31 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       min-height: 100vh;
       padding: 2rem;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: #fff;
     }
-    h1 {
-      font-size: 2.5rem;
-      margin: 0 0 0.5rem;
-      text-align: center;
+    .topbar {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.5rem;
     }
-    p.subtitle {
-      margin: 0 0 2.5rem;
-      opacity: 0.85;
-      text-align: center;
+    .topbar button {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 9px;
+      cursor: pointer;
     }
+    h1 { font-size: 2.5rem; margin: 0 0 0.5rem; text-align: center; }
+    p.subtitle { margin: 0 0 2rem; opacity: 0.85; text-align: center; }
     .cards {
       display: grid;
       gap: 1.25rem;
@@ -35,30 +43,39 @@
       max-width: 720px;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
-    a.card {
+    .card {
+      position: relative;
       display: block;
       padding: 1.5rem 1.75rem;
       border-radius: 16px;
       background: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #fff;
+      text-align: left;
       text-decoration: none;
       backdrop-filter: blur(6px);
+      cursor: pointer;
+      font: inherit;
       transition: transform 0.15s ease, background 0.15s ease;
     }
-    a.card:hover {
-      transform: translateY(-4px);
-      background: rgba(255, 255, 255, 0.22);
+    .card:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.22); }
+    .card .title { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .card .desc { font-size: 0.95rem; opacity: 0.8; }
+    .card .del {
+      position: absolute;
+      top: 0.6rem; right: 0.7rem;
+      width: 1.6rem; height: 1.6rem;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.25);
+      color: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity 0.15s ease;
     }
-    a.card .title {
-      font-size: 1.35rem;
-      font-weight: 600;
-      margin-bottom: 0.4rem;
-    }
-    a.card .desc {
-      font-size: 0.95rem;
-      opacity: 0.8;
-    }
+    .card:hover .del { opacity: 1; }
     .upload-card {
       display: flex;
       align-items: center;
@@ -75,99 +92,101 @@
       text-align: center;
       transition: transform 0.15s ease, background 0.15s ease;
     }
-    .upload-card:hover {
-      transform: translateY(-4px);
-      background: rgba(255, 255, 255, 0.16);
-    }
+    .upload-card:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.16); }
     .upload-card .plus { font-size: 1.8rem; line-height: 1; }
     .upload-card .label { font-size: 1.05rem; font-weight: 600; }
-    .status {
-      min-height: 1.2rem;
-      margin-top: 1.5rem;
+    .status { min-height: 1.2rem; margin-top: 1.5rem; text-align: center; font-size: 0.95rem; }
+    .banner {
+      width: 100%; max-width: 720px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
       text-align: center;
-      font-size: 0.95rem;
     }
-    footer {
-      margin-top: 3rem;
-      font-size: 0.85rem;
-      opacity: 0.6;
+    .banner button {
+      margin-top: 0.6rem;
+      background: #7c6bff; border: none; color: #fff; font: inherit; font-weight: 600;
+      padding: 0.5rem 1rem; border-radius: 9px; cursor: pointer;
     }
+    footer { margin-top: 3rem; font-size: 0.85rem; opacity: 0.6; }
 
     /* Modal */
     .overlay {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: rgba(0, 0, 0, 0.55);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      z-index: 10;
+      display: none; align-items: center; justify-content: center;
+      padding: 1.5rem; z-index: 10;
     }
     .overlay.open { display: flex; }
     .modal {
-      width: 100%;
-      max-width: 460px;
+      width: 100%; max-width: 460px;
       background: #2a2150;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 16px;
-      padding: 1.75rem;
+      border-radius: 16px; padding: 1.75rem;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
     }
     .modal h2 { margin: 0 0 1.25rem; font-size: 1.4rem; }
     .field { margin-bottom: 1rem; }
-    .field label {
-      display: block;
-      font-size: 0.85rem;
-      opacity: 0.85;
-      margin-bottom: 0.35rem;
-    }
+    .field label { display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 0.35rem; }
     .field input[type="text"],
-    .field input[type="password"],
+    .field input[type="url"],
     .field input[type="file"] {
-      width: 100%;
-      padding: 0.6rem 0.7rem;
-      border-radius: 9px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      font: inherit;
+      width: 100%; padding: 0.6rem 0.7rem;
+      border-radius: 9px; border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08); color: #fff; font: inherit;
     }
     .field input[type="file"] { padding: 0.45rem; }
     .field .hint { font-size: 0.78rem; opacity: 0.65; margin-top: 0.3rem; }
-    .field .hint a { color: #c9bfff; }
-    .checkbox-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; opacity: 0.9; }
-    .checkbox-row input { width: auto; }
     .actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
-    .btn {
-      flex: 1;
-      padding: 0.7rem 1rem;
-      border-radius: 10px;
-      border: none;
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .btn { flex: 1; padding: 0.7rem 1rem; border-radius: 10px; border: none; font: inherit; font-weight: 600; cursor: pointer; }
     .btn-primary { background: #7c6bff; color: #fff; }
     .btn-primary:disabled { opacity: 0.5; cursor: default; }
     .btn-ghost { background: rgba(255, 255, 255, 0.12); color: #fff; }
     .modal .error { color: #ffb3b3; font-size: 0.85rem; min-height: 1rem; margin-top: 0.75rem; }
+
+    /* Full-screen viewer (in-SPA) */
+    .viewer {
+      position: fixed; inset: 0; z-index: 20;
+      display: none; flex-direction: column;
+      background: #1c1636;
+    }
+    .viewer.open { display: flex; }
+    .viewer .bar {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.6rem 1rem;
+      background: #2a2150;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+    .viewer .bar .vtitle { font-weight: 600; flex: 1; }
+    .viewer .bar button {
+      background: rgba(255,255,255,0.14); border: none; color: #fff;
+      font: inherit; padding: 0.45rem 0.9rem; border-radius: 8px; cursor: pointer;
+    }
+    .viewer iframe { flex: 1; width: 100%; border: 0; background: #fff; }
   </style>
 </head>
 <body>
+  <div class="topbar">
+    <button id="btn-settings">⚙ Сервер</button>
+  </div>
+
   <h1>Playable Studio</h1>
   <p class="subtitle">Playable ad builders</p>
 
-  <div class="cards" id="cards">
-    <!-- cards rendered from builders/manifest.json -->
+  <div class="banner" id="banner" style="display:none">
+    Сервер не настроен. Укажите публичный URL (ngrok), чтобы видеть и загружать страницы.
+    <br><button id="banner-set">Указать сервер</button>
   </div>
 
+  <div class="cards" id="cards"></div>
   <div class="status" id="status"></div>
 
   <footer>Marketing Tools · Playable Studio</footer>
 
   <!-- Upload modal -->
-  <div class="overlay" id="overlay">
+  <div class="overlay" id="overlay-upload">
     <div class="modal">
       <h2>Загрузить страницу</h2>
       <div class="field">
@@ -182,191 +201,199 @@
         <label for="f-desc">Описание</label>
         <input type="text" id="f-desc" placeholder="Краткое описание">
       </div>
-      <div class="field">
-        <label for="f-token">GitHub token</label>
-        <input type="password" id="f-token" placeholder="github_pat_...">
-        <div class="hint">
-          Fine-grained token с правом <b>Contents: Read and write</b> на этот репозиторий.
-          <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">Создать токен</a>
-        </div>
-      </div>
-      <div class="field checkbox-row">
-        <input type="checkbox" id="f-remember">
-        <label for="f-remember" style="margin:0">Запомнить токен на этом устройстве</label>
-      </div>
-      <div class="error" id="modal-error"></div>
+      <div class="error" id="upload-error"></div>
       <div class="actions">
-        <button class="btn btn-ghost" id="btn-cancel">Отмена</button>
-        <button class="btn btn-primary" id="btn-upload">Загрузить</button>
+        <button class="btn btn-ghost" id="upload-cancel">Отмена</button>
+        <button class="btn btn-primary" id="upload-go">Загрузить</button>
       </div>
     </div>
   </div>
 
-  <script>
-    // --- Repository configuration (GitHub Pages deploy target) ---
-    const REPO_OWNER = "LevGogol-azur";
-    const REPO_NAME = "Marketing_Tools_playable-studio";
-    const BRANCH = "main";
-    const BUILDERS_DIR = "builders";
-    const MANIFEST_PATH = BUILDERS_DIR + "/manifest.json";
-    const API = "https://api.github.com/repos/" + REPO_OWNER + "/" + REPO_NAME + "/contents/";
-    const TOKEN_KEY = "ps_gh_token";
+  <!-- Settings modal -->
+  <div class="overlay" id="overlay-settings">
+    <div class="modal">
+      <h2>Адрес сервера</h2>
+      <div class="field">
+        <label for="f-server">Публичный URL (ngrok)</label>
+        <input type="url" id="f-server" placeholder="https://xxxx.ngrok-free.app">
+        <div class="hint">Запусти сервер и <code>ngrok http 3000</code>, затем вставь сюда выданный HTTPS-адрес.</div>
+      </div>
+      <div class="error" id="settings-error"></div>
+      <div class="actions">
+        <button class="btn btn-ghost" id="settings-cancel">Отмена</button>
+        <button class="btn btn-primary" id="settings-go">Сохранить</button>
+      </div>
+    </div>
+  </div>
 
+  <!-- In-SPA viewer -->
+  <div class="viewer" id="viewer">
+    <div class="bar">
+      <button id="viewer-back">← Назад</button>
+      <span class="vtitle" id="viewer-title"></span>
+      <button id="viewer-open">Открыть в новой вкладке</button>
+    </div>
+    <iframe id="viewer-frame" title="Playable"></iframe>
+  </div>
+
+  <script>
+    const SERVER_KEY = "ps_server_url";
     const $ = (id) => document.getElementById(id);
     const statusEl = $("status");
 
+    function getServer() {
+      return (localStorage.getItem(SERVER_KEY) || "").replace(/\/+$/, "");
+    }
+    function setServer(url) {
+      localStorage.setItem(SERVER_KEY, url.replace(/\/+$/, ""));
+    }
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, (c) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[c]));
     }
 
-    // --- Render cards from the manifest ---
+    // --- Cards ---
     async function loadCards() {
       const cardsEl = $("cards");
-      try {
-        const res = await fetch(MANIFEST_PATH + "?t=" + Date.now());
-        if (!res.ok) throw new Error("manifest " + res.status);
-        const data = await res.json();
-        const pages = (data && data.pages) || [];
-        cardsEl.innerHTML = pages.map((p) =>
-          '<a class="card" href="' + BUILDERS_DIR + '/' + encodeURIComponent(p.file) + '">' +
-            '<div class="title">' + escapeHtml(p.title || p.file) + '</div>' +
-            '<div class="desc">' + escapeHtml(p.desc || "") + '</div>' +
-          '</a>'
-        ).join("");
-      } catch (e) {
-        cardsEl.innerHTML = '<div class="desc">Не удалось загрузить список страниц.</div>';
+      const server = getServer();
+      $("banner").style.display = server ? "none" : "block";
+      cardsEl.innerHTML = "";
+
+      let pages = [];
+      if (server) {
+        try {
+          const res = await fetch(server + "/api/pages", { cache: "no-store" });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const data = await res.json();
+          pages = (data && data.pages) || [];
+          statusEl.textContent = "";
+        } catch (e) {
+          statusEl.textContent = "⚠️ Не удалось связаться с сервером (" + e.message + "). Проверь, что сервер и ngrok запущены, и адрес указан верно.";
+        }
       }
-      // Append the upload tile
+
+      for (const p of pages) {
+        const card = document.createElement("button");
+        card.className = "card";
+        card.innerHTML =
+          '<div class="title">' + escapeHtml(p.title || p.file) + '</div>' +
+          '<div class="desc">' + escapeHtml(p.desc || "") + '</div>' +
+          '<span class="del" title="Удалить">×</span>';
+        card.addEventListener("click", (e) => {
+          if (e.target.classList.contains("del")) return;
+          openViewer(p);
+        });
+        card.querySelector(".del").addEventListener("click", (e) => {
+          e.stopPropagation();
+          deletePage(p);
+        });
+        cardsEl.appendChild(card);
+      }
+
       const upload = document.createElement("button");
       upload.className = "upload-card";
       upload.innerHTML = '<span class="plus">+</span><span class="label">Загрузить страницу</span>';
-      upload.addEventListener("click", openModal);
+      upload.addEventListener("click", openUpload);
       cardsEl.appendChild(upload);
     }
 
-    // --- Modal handling ---
-    function openModal() {
-      $("modal-error").textContent = "";
-      const saved = localStorage.getItem(TOKEN_KEY);
-      if (saved) { $("f-token").value = saved; $("f-remember").checked = true; }
-      $("overlay").classList.add("open");
+    // --- Viewer ---
+    function pageUrl(p) { return getServer() + "/pages/" + encodeURIComponent(p.file); }
+    function openViewer(p) {
+      $("viewer-title").textContent = p.title || p.file;
+      $("viewer-frame").src = pageUrl(p);
+      $("viewer-open").onclick = () => window.open(pageUrl(p), "_blank", "noopener");
+      $("viewer").classList.add("open");
     }
-    function closeModal() { $("overlay").classList.remove("open"); }
+    $("viewer-back").addEventListener("click", () => {
+      $("viewer").classList.remove("open");
+      $("viewer-frame").src = "about:blank";
+    });
 
-    $("btn-cancel").addEventListener("click", closeModal);
-    $("overlay").addEventListener("click", (e) => { if (e.target === $("overlay")) closeModal(); });
-
-    function slugify(name) {
-      return name.toLowerCase()
-        .replace(/\.html?$/i, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 80) || "page";
+    // --- Delete ---
+    async function deletePage(p) {
+      if (!confirm('Удалить "' + (p.title || p.file) + '"?')) return;
+      try {
+        const res = await fetch(getServer() + "/api/pages/" + encodeURIComponent(p.file), { method: "DELETE" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        statusEl.textContent = "Удалено: " + (p.title || p.file);
+        loadCards();
+      } catch (e) {
+        statusEl.textContent = "⚠️ Не удалось удалить: " + e.message;
+      }
     }
+
+    // --- Upload modal ---
+    function openUpload() {
+      if (!getServer()) { openSettings(); return; }
+      $("upload-error").textContent = "";
+      $("overlay-upload").classList.add("open");
+    }
+    $("upload-cancel").addEventListener("click", () => $("overlay-upload").classList.remove("open"));
+    $("overlay-upload").addEventListener("click", (e) => { if (e.target === $("overlay-upload")) e.currentTarget.classList.remove("open"); });
 
     function readFileAsBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-          // result is "data:...;base64,XXXX" — strip the prefix
-          const comma = reader.result.indexOf(",");
-          resolve(reader.result.slice(comma + 1));
-        };
+        reader.onload = () => resolve(reader.result.slice(reader.result.indexOf(",") + 1));
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
     }
 
-    async function ghGet(path, token) {
-      const res = await fetch(API + path + "?ref=" + BRANCH, {
-        headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }
-      });
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error("GET " + path + " → " + res.status);
-      return res.json();
-    }
-
-    async function ghPut(path, contentBase64, message, token, sha) {
-      const body = { message, content: contentBase64, branch: BRANCH };
-      if (sha) body.sha = sha;
-      const res = await fetch(API + path, {
-        method: "PUT",
-        headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" },
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) {
-        const detail = await res.json().catch(() => ({}));
-        throw new Error("PUT " + path + " → " + res.status + " " + (detail.message || ""));
-      }
-      return res.json();
-    }
-
-    function utf8ToBase64(str) {
-      return btoa(unescape(encodeURIComponent(str)));
-    }
-
-    $("btn-upload").addEventListener("click", async () => {
-      const errEl = $("modal-error");
+    $("upload-go").addEventListener("click", async () => {
+      const errEl = $("upload-error");
       errEl.textContent = "";
-      const fileInput = $("f-file");
-      const file = fileInput.files[0];
+      const file = $("f-file").files[0];
       const title = $("f-title").value.trim();
       const desc = $("f-desc").value.trim();
-      const token = $("f-token").value.trim();
 
       if (!file) { errEl.textContent = "Выберите HTML-файл."; return; }
       if (!/\.html?$/i.test(file.name)) { errEl.textContent = "Файл должен быть .html"; return; }
       if (!title) { errEl.textContent = "Укажите название."; return; }
-      if (!token) { errEl.textContent = "Укажите GitHub token."; return; }
 
-      const btn = $("btn-upload");
-      btn.disabled = true;
-      btn.textContent = "Загрузка…";
-
+      const btn = $("upload-go");
+      btn.disabled = true; btn.textContent = "Загрузка…";
       try {
-        if ($("f-remember").checked) localStorage.setItem(TOKEN_KEY, token);
-        else localStorage.removeItem(TOKEN_KEY);
-
-        // Unique filename within builders/
-        let slug = slugify(file.name);
-        let filePath = BUILDERS_DIR + "/" + slug + ".html";
-        let existing = await ghGet(filePath, token);
-        let n = 2;
-        while (existing) {
-          slug = slugify(file.name) + "-" + n++;
-          filePath = BUILDERS_DIR + "/" + slug + ".html";
-          existing = await ghGet(filePath, token);
+        const contentBase64 = await readFileAsBase64(file);
+        const res = await fetch(getServer() + "/api/pages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name, title, desc, contentBase64 })
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || ("HTTP " + res.status));
         }
-
-        // 1. Commit the HTML file
-        const fileB64 = await readFileAsBase64(file);
-        await ghPut(filePath, fileB64, "Add playable page: " + slug, token);
-
-        // 2. Update the manifest
-        const manifestMeta = await ghGet(MANIFEST_PATH, token);
-        let manifest = { pages: [] };
-        if (manifestMeta && manifestMeta.content) {
-          try { manifest = JSON.parse(decodeURIComponent(escape(atob(manifestMeta.content)))); }
-          catch (_) { manifest = { pages: [] }; }
-        }
-        if (!Array.isArray(manifest.pages)) manifest.pages = [];
-        manifest.pages.push({ file: slug + ".html", title, desc });
-        const manifestB64 = utf8ToBase64(JSON.stringify(manifest, null, 2) + "\n");
-        await ghPut(MANIFEST_PATH, manifestB64, "Register playable page: " + slug, token, manifestMeta && manifestMeta.sha);
-
-        closeModal();
-        fileInput.value = "";
-        $("f-title").value = "";
-        $("f-desc").value = "";
-        statusEl.textContent = "✅ Загружено. Страница появится в списке после деплоя (~1 мин).";
+        $("overlay-upload").classList.remove("open");
+        $("f-file").value = ""; $("f-title").value = ""; $("f-desc").value = "";
+        statusEl.textContent = "✅ Загружено.";
+        loadCards();
       } catch (e) {
         errEl.textContent = "Ошибка: " + e.message;
       } finally {
-        btn.disabled = false;
-        btn.textContent = "Загрузить";
+        btn.disabled = false; btn.textContent = "Загрузить";
       }
+    });
+
+    // --- Settings modal ---
+    function openSettings() {
+      $("settings-error").textContent = "";
+      $("f-server").value = getServer();
+      $("overlay-settings").classList.add("open");
+    }
+    $("btn-settings").addEventListener("click", openSettings);
+    $("banner-set").addEventListener("click", openSettings);
+    $("settings-cancel").addEventListener("click", () => $("overlay-settings").classList.remove("open"));
+    $("overlay-settings").addEventListener("click", (e) => { if (e.target === $("overlay-settings")) e.currentTarget.classList.remove("open"); });
+
+    $("settings-go").addEventListener("click", () => {
+      const url = $("f-server").value.trim();
+      if (!/^https?:\/\//i.test(url)) { $("settings-error").textContent = "Укажите URL, начиная с https://"; return; }
+      setServer(url);
+      $("overlay-settings").classList.remove("open");
+      loadCards();
     });
 
     loadCards();

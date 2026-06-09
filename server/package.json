@@ -1,0 +1,15 @@
+{
+  "name": "playable-studio-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Stores and serves Playable Studio HTML pages; exposed publicly via ngrok.",
+  "scripts": {
+    "start": "node server.js",
+    "tunnel": "ngrok http 3000"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
