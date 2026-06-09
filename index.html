@@ -238,8 +238,11 @@
 
   <script>
     const SERVER_KEY = "ps_server_url";
+    // ngrok-free shows a browser-warning interstitial for HTML loads; this header skips it.
+    const NGROK_HEADERS = { "ngrok-skip-browser-warning": "1" };
     const $ = (id) => document.getElementById(id);
     const statusEl = $("status");
+    let viewerBlobUrl = null;
 
     function getServer() {
       return (localStorage.getItem(SERVER_KEY) || "").replace(/\/+$/, "");
@@ -263,7 +266,7 @@
       let pages = [];
       if (server) {
         try {
-          const res = await fetch(server + "/api/pages", { cache: "no-store" });
+          const res = await fetch(server + "/api/pages", { cache: "no-store", headers: NGROK_HEADERS });
           if (!res.ok) throw new Error("HTTP " + res.status);
           const data = await res.json();
           pages = (data && data.pages) || [];
@@ -300,22 +303,38 @@
 
     // --- Viewer ---
     function pageUrl(p) { return getServer() + "/pages/" + encodeURIComponent(p.file); }
-    function openViewer(p) {
+    function revokeBlob() {
+      if (viewerBlobUrl) { URL.revokeObjectURL(viewerBlobUrl); viewerBlobUrl = null; }
+    }
+    async function openViewer(p) {
       $("viewer-title").textContent = p.title || p.file;
-      $("viewer-frame").src = pageUrl(p);
-      $("viewer-open").onclick = () => window.open(pageUrl(p), "_blank", "noopener");
       $("viewer").classList.add("open");
+      $("viewer-frame").src = "about:blank";
+      // Fetch with the skip-warning header, then show via a blob URL (iframe nav can't send headers).
+      try {
+        const res = await fetch(pageUrl(p), { headers: NGROK_HEADERS, cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const html = await res.blob();
+        revokeBlob();
+        viewerBlobUrl = URL.createObjectURL(html);
+        $("viewer-frame").src = viewerBlobUrl;
+        $("viewer-open").onclick = () => window.open(viewerBlobUrl, "_blank", "noopener");
+      } catch (e) {
+        $("viewer-frame").src = "about:blank";
+        statusEl.textContent = "⚠️ Не удалось открыть страницу: " + e.message;
+      }
     }
     $("viewer-back").addEventListener("click", () => {
       $("viewer").classList.remove("open");
       $("viewer-frame").src = "about:blank";
+      revokeBlob();
     });
 
     // --- Delete ---
     async function deletePage(p) {
       if (!confirm('Удалить "' + (p.title || p.file) + '"?')) return;
       try {
-        const res = await fetch(getServer() + "/api/pages/" + encodeURIComponent(p.file), { method: "DELETE" });
+        const res = await fetch(getServer() + "/api/pages/" + encodeURIComponent(p.file), { method: "DELETE", headers: NGROK_HEADERS });
         if (!res.ok) throw new Error("HTTP " + res.status);
         statusEl.textContent = "Удалено: " + (p.title || p.file);
         loadCards();
@@ -359,7 +378,7 @@
         const contentBase64 = await readFileAsBase64(file);
         const res = await fetch(getServer() + "/api/pages", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
           body: JSON.stringify({ filename: file.name, title, desc, contentBase64 })
         });
         if (!res.ok) {
