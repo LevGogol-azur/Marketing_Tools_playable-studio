@@ -1,0 +1,110 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.topbar { width: 100%; max-width: 720px; display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
+.topbar button {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+  color: #fff; font: inherit; font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 9px; cursor: pointer;
+}
+
+h1 { font-size: 2.5rem; margin: 0 0 0.5rem; text-align: center; }
+p.subtitle { margin: 0 0 2rem; opacity: 0.85; text-align: center; }
+
+.cards {
+  display: grid; gap: 1.25rem; width: 100%; max-width: 720px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.card {
+  position: relative; display: block; padding: 1.5rem 1.75rem; border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff; text-align: left; backdrop-filter: blur(6px); cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.card:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.22); }
+.card .title { font-size: 1.35rem; font-weight: 600; }
+.card .del {
+  position: absolute; top: 0.6rem; right: 0.7rem; width: 1.6rem; height: 1.6rem; border-radius: 50%;
+  border: none; background: rgba(0,0,0,0.25); color: #fff; cursor: pointer; font-size: 1rem; line-height: 1;
+  opacity: 0; transition: opacity 0.15s ease;
+}
+.card:hover .del { opacity: 1; }
+
+.upload-card {
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0.4rem;
+  padding: 1.5rem 1.75rem; border-radius: 16px; background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.45); color: #fff; cursor: pointer; font: inherit; text-align: center;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.upload-card:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.16); }
+.upload-card.over { background: rgba(124, 107, 255, 0.35); border-color: #fff; }
+.upload-card .plus { font-size: 1.8rem; line-height: 1; }
+.upload-card .label { font-size: 1.05rem; font-weight: 600; }
+
+.status { min-height: 1.2rem; margin-top: 1.5rem; text-align: center; font-size: 0.95rem; }
+.banner {
+  width: 100%; max-width: 720px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; text-align: center;
+}
+.banner button {
+  margin-top: 0.6rem; background: #7c6bff; border: none; color: #fff; font: inherit; font-weight: 600;
+  padding: 0.5rem 1rem; border-radius: 9px; cursor: pointer;
+}
+footer { margin-top: 3rem; font-size: 0.85rem; opacity: 0.6; }
+
+/* Modal */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem; z-index: 10;
+}
+.modal {
+  width: 100%; max-width: 460px; background: #2a2150; border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px; padding: 1.75rem; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+.modal h2 { margin: 0 0 1.25rem; font-size: 1.4rem; }
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 0.85rem; opacity: 0.85; margin-bottom: 0.35rem; }
+.field input[type="text"], .field input[type="url"] {
+  width: 100%; padding: 0.6rem 0.7rem; border-radius: 9px; border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08); color: #fff; font: inherit;
+}
+.field .hint { font-size: 0.78rem; opacity: 0.65; margin-top: 0.3rem; }
+
+.dropzone {
+  border: 2px dashed rgba(255,255,255,0.4); border-radius: 12px; padding: 1.5rem 1rem; text-align: center;
+  font-size: 0.9rem; opacity: 0.9; cursor: pointer; margin-bottom: 1rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.dropzone:hover { background: rgba(255,255,255,0.06); }
+.dropzone.over { background: rgba(124, 107, 255, 0.3); border-color: #fff; opacity: 1; }
+
+.actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+.btn { flex: 1; padding: 0.7rem 1rem; border-radius: 10px; border: none; font: inherit; font-weight: 600; cursor: pointer; }
+.btn-primary { background: #7c6bff; color: #fff; }
+.btn-primary:disabled { opacity: 0.5; cursor: default; }
+.btn-ghost { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.modal .error { color: #ffb3b3; font-size: 0.85rem; min-height: 1rem; margin-top: 0.75rem; }
+
+/* Full-screen viewer */
+.viewer { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; background: #1c1636; }
+.viewer .bar {
+  display: flex; align-items: center; gap: 1rem; padding: 0.6rem 1rem; background: #2a2150;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.viewer .bar .vtitle { font-weight: 600; flex: 1; }
+.viewer .bar button {
+  background: rgba(255,255,255,0.14); border: none; color: #fff; font: inherit;
+  padding: 0.45rem 0.9rem; border-radius: 8px; cursor: pointer;
+}
+.viewer iframe { flex: 1; width: 100%; border: 0; background: #fff; }
