@@ -216,7 +216,7 @@
       <div class="field">
         <label for="f-server">Публичный URL (ngrok)</label>
         <input type="url" id="f-server" placeholder="https://xxxx.ngrok-free.app">
-        <div class="hint">Запусти сервер и <code>ngrok http 3000</code>, затем вставь сюда выданный HTTPS-адрес.</div>
+        <div class="hint">Обычно адрес берётся автоматически из <code>server-url.json</code> в репозитории. Это поле — локальный запасной вариант (если файла нет).</div>
       </div>
       <div class="error" id="settings-error"></div>
       <div class="actions">
@@ -243,12 +243,27 @@
     const $ = (id) => document.getElementById(id);
     const statusEl = $("status");
     let viewerBlobUrl = null;
+    let currentServer = ""; // resolved server URL used by all calls
 
-    function getServer() {
-      return (localStorage.getItem(SERVER_KEY) || "").replace(/\/+$/, "");
-    }
-    function setServer(url) {
-      localStorage.setItem(SERVER_KEY, url.replace(/\/+$/, ""));
+    const trim = (u) => (u || "").trim().replace(/\/+$/, "");
+    function getOverride() { return trim(localStorage.getItem(SERVER_KEY)); }
+    function setServer(url) { localStorage.setItem(SERVER_KEY, trim(url)); }
+
+    // Resolve the server URL. Priority:
+    //   1. ?server=URL query param (dev/testing)
+    //   2. repo-managed server-url.json (central — automatic for everyone)
+    //   3. local override saved via the ⚙ Сервер dialog
+    async function resolveServer() {
+      const q = trim(new URLSearchParams(location.search).get("server"));
+      if (q) { setServer(q); return q; }
+      try {
+        const res = await fetch("server-url.json?t=" + Date.now(), { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.url) return trim(data.url);
+        }
+      } catch (_) { /* fall through to local override */ }
+      return getOverride();
     }
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, (c) => ({
@@ -259,14 +274,14 @@
     // --- Cards ---
     async function loadCards() {
       const cardsEl = $("cards");
-      const server = getServer();
-      $("banner").style.display = server ? "none" : "block";
+      currentServer = await resolveServer();
+      $("banner").style.display = currentServer ? "none" : "block";
       cardsEl.innerHTML = "";
 
       let pages = [];
-      if (server) {
+      if (currentServer) {
         try {
-          const res = await fetch(server + "/api/pages", { cache: "no-store", headers: NGROK_HEADERS });
+          const res = await fetch(currentServer + "/api/pages", { cache: "no-store", headers: NGROK_HEADERS });
           if (!res.ok) throw new Error("HTTP " + res.status);
           const data = await res.json();
           pages = (data && data.pages) || [];
@@ -302,7 +317,7 @@
     }
 
     // --- Viewer ---
-    function pageUrl(p) { return getServer() + "/pages/" + encodeURIComponent(p.file); }
+    function pageUrl(p) { return currentServer + "/pages/" + encodeURIComponent(p.file); }
     function revokeBlob() {
       if (viewerBlobUrl) { URL.revokeObjectURL(viewerBlobUrl); viewerBlobUrl = null; }
     }
@@ -334,7 +349,7 @@
     async function deletePage(p) {
       if (!confirm('Удалить "' + (p.title || p.file) + '"?')) return;
       try {
-        const res = await fetch(getServer() + "/api/pages/" + encodeURIComponent(p.file), { method: "DELETE", headers: NGROK_HEADERS });
+        const res = await fetch(currentServer + "/api/pages/" + encodeURIComponent(p.file), { method: "DELETE", headers: NGROK_HEADERS });
         if (!res.ok) throw new Error("HTTP " + res.status);
         statusEl.textContent = "Удалено: " + (p.title || p.file);
         loadCards();
@@ -345,7 +360,7 @@
 
     // --- Upload modal ---
     function openUpload() {
-      if (!getServer()) { openSettings(); return; }
+      if (!currentServer) { openSettings(); return; }
       $("upload-error").textContent = "";
       $("overlay-upload").classList.add("open");
     }
@@ -376,7 +391,7 @@
       btn.disabled = true; btn.textContent = "Загрузка…";
       try {
         const contentBase64 = await readFileAsBase64(file);
-        const res = await fetch(getServer() + "/api/pages", {
+        const res = await fetch(currentServer + "/api/pages", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
           body: JSON.stringify({ filename: file.name, title, desc, contentBase64 })
@@ -399,7 +414,7 @@
     // --- Settings modal ---
     function openSettings() {
       $("settings-error").textContent = "";
-      $("f-server").value = getServer();
+      $("f-server").value = currentServer || getOverride();
       $("overlay-settings").classList.add("open");
     }
     $("btn-settings").addEventListener("click", openSettings);
