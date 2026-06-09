@@ -21,6 +21,14 @@
         <input type="text" v-model="title" placeholder="My Playable Builder" />
       </div>
 
+      <div class="field">
+        <label>Папка <span class="opt">(необязательно)</span></label>
+        <input type="text" v-model="folder" list="folders-upload" placeholder="Без папки (корень)" />
+        <datalist id="folders-upload">
+          <option v-for="f in folders" :key="f" :value="f" />
+        </datalist>
+      </div>
+
       <div class="error">{{ error }}</div>
       <div class="actions">
         <button class="btn btn-ghost" @click="$emit('close')">Отмена</button>
@@ -39,11 +47,14 @@ import * as api from "../api.js";
 const props = defineProps({
   server: { type: String, required: true },
   initialFile: { type: Object, default: null },
+  initialFolder: { type: String, default: "" },
+  folders: { type: Array, default: () => [] },
 });
 const emit = defineEmits(["close", "uploaded"]);
 
 const file = ref(null);
 const title = ref("");
+const folder = ref(props.initialFolder || "");
 const error = ref("");
 const busy = ref(false);
 const dragOver = ref(false);
@@ -83,6 +94,7 @@ async function submit() {
     await api.uploadPage(props.server, {
       filename: file.value.name,
       title: title.value.trim(),
+      folder: folder.value.trim(),
       contentBase64,
     });
     emit("uploaded");

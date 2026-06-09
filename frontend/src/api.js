@@ -42,11 +42,25 @@ export async function listPages(server) {
   return (data && data.pages) || [];
 }
 
-export async function uploadPage(server, { filename, title, contentBase64 }) {
+export async function uploadPage(server, { filename, title, folder, contentBase64 }) {
   const res = await fetch(server + "/api/pages", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
-    body: JSON.stringify({ filename, title, contentBase64 }),
+    body: JSON.stringify({ filename, title, folder, contentBase64 }),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || "HTTP " + res.status);
+  }
+  const data = await res.json();
+  return data.page;
+}
+
+export async function movePage(server, file, folder) {
+  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
+    body: JSON.stringify({ folder }),
   });
   if (!res.ok) {
     const d = await res.json().catch(() => ({}));

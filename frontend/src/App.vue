@@ -17,16 +17,38 @@
 
     <section>
       <div class="section-head">
-        <h2>Builders</h2>
-        <span class="count">{{ pages.length }}</span>
+        <template v-if="currentFolder">
+          <button class="crumb" @click="currentFolder = null">Builders</button>
+          <span class="crumb-sep">/</span>
+          <h2>{{ currentFolder }}</h2>
+          <span class="count">{{ visiblePages.length }}</span>
+        </template>
+        <template v-else>
+          <h2>Builders</h2>
+          <span class="count">{{ pages.length }}</span>
+        </template>
       </div>
+
       <div class="cards">
+        <template v-if="!currentFolder">
+          <FolderCard
+            v-for="f in folderList"
+            :key="'folder:' + f.name"
+            :name="f.name"
+            :count="f.count"
+            @open="currentFolder = f.name"
+            @drop-page="moveDragged(f.name)"
+          />
+        </template>
         <PageCard
-          v-for="p in pages"
+          v-for="p in visiblePages"
           :key="p.file"
           :page="p"
           @open="openViewer(p)"
+          @move="openMove(p)"
           @remove="removePage(p)"
+          @dragstart="draggedPage = p"
+          @dragend="draggedPage = null"
         />
         <UploadCard @click="openUpload()" @files="onDropped" />
       </div>
@@ -41,8 +63,18 @@
     v-if="showUpload"
     :server="server"
     :initial-file="pendingFile"
+    :initial-folder="currentFolder || ''"
+    :folders="folderNames"
     @close="closeUpload"
     @uploaded="onUploaded"
+  />
+  <MoveModal
+    v-if="moving"
+    :server="server"
+    :page="moving"
+    :folders="folderNames"
+    @close="moving = null"
+    @moved="onMoved"
   />
   <SettingsModal
     v-if="showSettings"
@@ -60,10 +92,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import PageCard from "./components/PageCard.vue";
+import FolderCard from "./components/FolderCard.vue";
 import UploadCard from "./components/UploadCard.vue";
 import UploadModal from "./components/UploadModal.vue";
+import MoveModal from "./components/MoveModal.vue";
 import SettingsModal from "./components/SettingsModal.vue";
 import PageViewer from "./components/PageViewer.vue";
 import * as api from "./api.js";
@@ -74,9 +108,34 @@ const status = ref("");
 const showUpload = ref(false);
 const showSettings = ref(false);
 const pendingFile = ref(null);
+const moving = ref(null);
+const currentFolder = ref(null);
+const draggedPage = ref(null);
 const viewer = ref({ open: false, title: "", blobUrl: "", loading: false });
 
 let currentBlob = null;
+
+const folderOf = (p) => (p.folder || "").trim();
+
+// Distinct folders (derived from page entries) with counts, sorted.
+const folderList = computed(() => {
+  const counts = new Map();
+  for (const p of pages.value) {
+    const f = folderOf(p);
+    if (f) counts.set(f, (counts.get(f) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+});
+const folderNames = computed(() => folderList.value.map((f) => f.name));
+
+// Pages shown in the current view: a folder's contents, or the ungrouped (root) pages.
+const visiblePages = computed(() =>
+  currentFolder.value
+    ? pages.value.filter((p) => folderOf(p) === currentFolder.value)
+    : pages.value.filter((p) => !folderOf(p))
+);
 
 async function load() {
   server.value = await api.resolveServer();
@@ -87,6 +146,10 @@ async function load() {
   try {
     pages.value = await api.listPages(server.value);
     status.value = "";
+    // Left a folder that no longer has any pages → return to root.
+    if (currentFolder.value && !pages.value.some((p) => folderOf(p) === currentFolder.value)) {
+      currentFolder.value = null;
+    }
   } catch (e) {
     status.value =
       "⚠️ Не удалось связаться с сервером (" + e.message +
@@ -113,6 +176,29 @@ async function onUploaded() {
   closeUpload();
   status.value = "✅ Загружено.";
   await load();
+}
+
+function openMove(p) {
+  moving.value = p;
+}
+async function onMoved() {
+  moving.value = null;
+  status.value = "Перемещено.";
+  await load();
+}
+
+// Drag a builder card onto a folder card to move it there.
+async function moveDragged(folder) {
+  const p = draggedPage.value;
+  draggedPage.value = null;
+  if (!p || folderOf(p) === folder) return;
+  try {
+    await api.movePage(server.value, p.file, folder);
+    status.value = '«' + (p.title || p.file) + '» → ' + folder;
+    await load();
+  } catch (e) {
+    status.value = "⚠️ Не удалось переместить: " + e.message;
+  }
 }
 
 async function removePage(p) {

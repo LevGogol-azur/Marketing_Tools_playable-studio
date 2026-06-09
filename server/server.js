@@ -50,9 +50,9 @@ app.get("/api/pages", (_req, res) => {
 });
 
 // --- API: upload a page ---
-// Body: { filename, title, contentBase64 }
+// Body: { filename, title, folder, contentBase64 }
 app.post("/api/pages", (req, res) => {
-  const { filename, title, contentBase64 } = req.body || {};
+  const { filename, title, folder, contentBase64 } = req.body || {};
   if (!title || !contentBase64) {
     return res.status(400).json({ error: "title and contentBase64 are required" });
   }
@@ -81,9 +81,26 @@ app.post("/api/pages", (req, res) => {
   const entry = {
     file,
     title: String(title),
+    folder: folder ? String(folder).trim() : "",
     uploaded: new Date().toISOString(),
   };
   manifest.pages.push(entry);
+  writeManifest(manifest);
+
+  res.json({ ok: true, page: entry });
+});
+
+// --- API: update a page (e.g. move to a folder) ---
+// Body: { folder?, title? }
+app.patch("/api/pages/:file", (req, res) => {
+  const file = path.basename(req.params.file);
+  const manifest = readManifest();
+  const entry = manifest.pages.find((p) => p.file === file);
+  if (!entry) return res.status(404).json({ error: "not found" });
+
+  const { folder, title } = req.body || {};
+  if (folder !== undefined) entry.folder = folder ? String(folder).trim() : "";
+  if (title !== undefined && title) entry.title = String(title);
   writeManifest(manifest);
 
   res.json({ ok: true, page: entry });

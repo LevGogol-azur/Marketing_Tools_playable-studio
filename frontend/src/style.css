@@ -106,6 +106,14 @@ body::before {
   background: var(--surface-2); border: 1px solid var(--border);
   padding: 0.1rem 0.5rem; border-radius: 999px;
 }
+.count-right { margin-left: auto; align-self: center; }
+.crumb {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--text-dim); font: inherit; font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em;
+  transition: color 0.16s ease;
+}
+.crumb:hover { color: var(--text); }
+.crumb-sep { color: var(--text-faint); }
 
 /* ---- Cards grid ---- */
 .cards {
@@ -150,15 +158,29 @@ body::before {
   transition: color 0.18s ease;
 }
 .card:hover .card-meta { color: var(--accent); }
-.card .del {
-  position: absolute; top: 0.5rem; right: 0.55rem;
-  width: 1.5rem; height: 1.5rem; border-radius: 7px;
-  border: none; background: transparent; color: var(--text-faint);
-  cursor: pointer; font-size: 1.05rem; line-height: 1;
-  opacity: 0; transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease;
+.card-actions {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  display: flex; gap: 0.15rem;
+  opacity: 0; transition: opacity 0.18s ease;
 }
-.card:hover .del { opacity: 1; }
-.card .del:hover { background: rgba(255, 80, 80, 0.15); color: #ff9d9d; }
+.card:hover .card-actions { opacity: 1; }
+.icon-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 1.6rem; height: 1.6rem; border-radius: 7px;
+  border: none; background: var(--surface-2); color: var(--text-dim);
+  cursor: pointer; font-size: 1.05rem; line-height: 1;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+.icon-btn:hover { background: var(--surface-hover); color: var(--text); }
+.icon-btn.del:hover { background: rgba(255, 80, 80, 0.15); color: #ff9d9d; }
+
+/* Folder card */
+.folder-mark { color: #cdd0ff; background: linear-gradient(140deg, rgba(94, 123, 255, 0.28), rgba(124, 107, 255, 0.12)); border-color: rgba(94, 123, 255, 0.25); }
+.folder-card.drop-over { border-color: var(--accent); background: var(--accent-soft); box-shadow: var(--shadow-accent); }
+.folder-card.drop-over .card-meta { color: var(--accent); }
+
+.move-sub { margin: -0.75rem 0 1.25rem; color: var(--text-dim); font-size: 0.9rem; }
+.opt { color: var(--text-faint); font-weight: 400; }
 
 /* ---- Upload tile ---- */
 .upload-card {
