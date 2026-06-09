@@ -1,28 +1,40 @@
 <template>
-  <div class="topbar">
-    <button @click="openSettings">⚙ Сервер</button>
-  </div>
+  <nav class="nav container">
+    <div class="brand"><span class="logo-dot"></span> Playable Studio</div>
+    <button class="btn btn-ghost btn-sm" @click="openSettings">⚙ Сервер</button>
+  </nav>
 
-  <h1>Playable Studio</h1>
-  <p class="subtitle">Playable ad builders</p>
+  <main class="container">
+    <section class="hero">
+      <h1>Playable Studio</h1>
+      <p class="subtitle">Playable ad builders</p>
+    </section>
 
-  <div v-if="!server" class="banner">
-    Сервер не настроен. Укажите публичный URL (ngrok), чтобы видеть и загружать страницы.
-    <br /><button @click="openSettings">Указать сервер</button>
-  </div>
+    <div v-if="!server" class="banner">
+      Сервер не настроен. Укажите публичный URL (ngrok), чтобы видеть и загружать страницы.
+      <br /><button @click="openSettings">Указать сервер</button>
+    </div>
 
-  <div class="cards">
-    <PageCard
-      v-for="p in pages"
-      :key="p.file"
-      :page="p"
-      @open="openViewer(p)"
-      @remove="removePage(p)"
-    />
-    <UploadCard @click="openUpload()" @files="onDropped" />
-  </div>
+    <section>
+      <div class="section-head">
+        <h2>Builders</h2>
+        <span class="count">{{ pages.length }}</span>
+      </div>
+      <div class="cards">
+        <PageCard
+          v-for="p in pages"
+          :key="p.file"
+          :page="p"
+          @open="openViewer(p)"
+          @remove="removePage(p)"
+        />
+        <UploadCard @click="openUpload()" @files="onDropped" />
+      </div>
+    </section>
 
-  <div class="status">{{ status }}</div>
+    <div class="status">{{ status }}</div>
+  </main>
+
   <footer>Marketing Tools · Playable Studio</footer>
 
   <UploadModal
