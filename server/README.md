@@ -48,7 +48,7 @@ git add ../server-url.json && git commit -m "Update server URL" && git push
 | Метод  | Путь                | Назначение                                        |
 |--------|---------------------|---------------------------------------------------|
 | GET    | `/api/pages`        | Список страниц (manifest)                          |
-| POST   | `/api/pages`        | Загрузить: `{ filename, title, desc, contentBase64 }` |
+| POST   | `/api/pages`        | Загрузить: `{ filename, title, contentBase64 }`   |
 | DELETE | `/api/pages/:file`  | Удалить страницу                                   |
 | GET    | `/pages/<file>`     | Открыть сохранённую HTML-страницу                  |
 

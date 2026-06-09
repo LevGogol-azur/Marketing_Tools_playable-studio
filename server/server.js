@@ -50,9 +50,9 @@ app.get("/api/pages", (_req, res) => {
 });
 
 // --- API: upload a page ---
-// Body: { filename, title, desc, contentBase64 }
+// Body: { filename, title, contentBase64 }
 app.post("/api/pages", (req, res) => {
-  const { filename, title, desc, contentBase64 } = req.body || {};
+  const { filename, title, contentBase64 } = req.body || {};
   if (!title || !contentBase64) {
     return res.status(400).json({ error: "title and contentBase64 are required" });
   }
@@ -81,7 +81,6 @@ app.post("/api/pages", (req, res) => {
   const entry = {
     file,
     title: String(title),
-    desc: desc ? String(desc) : "",
     uploaded: new Date().toISOString(),
   };
   manifest.pages.push(entry);

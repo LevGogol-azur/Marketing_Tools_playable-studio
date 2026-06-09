@@ -59,8 +59,7 @@
       transition: transform 0.15s ease, background 0.15s ease;
     }
     .card:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.22); }
-    .card .title { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.4rem; }
-    .card .desc { font-size: 0.95rem; opacity: 0.8; }
+    .card .title { font-size: 1.35rem; font-weight: 600; }
     .card .del {
       position: absolute;
       top: 0.6rem; right: 0.7rem;
@@ -197,10 +196,6 @@
         <label for="f-title">Название</label>
         <input type="text" id="f-title" placeholder="My Playable Builder">
       </div>
-      <div class="field">
-        <label for="f-desc">Описание</label>
-        <input type="text" id="f-desc" placeholder="Краткое описание">
-      </div>
       <div class="error" id="upload-error"></div>
       <div class="actions">
         <button class="btn btn-ghost" id="upload-cancel">Отмена</button>
@@ -296,7 +291,6 @@
         card.className = "card";
         card.innerHTML =
           '<div class="title">' + escapeHtml(p.title || p.file) + '</div>' +
-          '<div class="desc">' + escapeHtml(p.desc || "") + '</div>' +
           '<span class="del" title="Удалить">×</span>';
         card.addEventListener("click", (e) => {
           if (e.target.classList.contains("del")) return;
@@ -381,7 +375,6 @@
       errEl.textContent = "";
       const file = $("f-file").files[0];
       const title = $("f-title").value.trim();
-      const desc = $("f-desc").value.trim();
 
       if (!file) { errEl.textContent = "Выберите HTML-файл."; return; }
       if (!/\.html?$/i.test(file.name)) { errEl.textContent = "Файл должен быть .html"; return; }
@@ -394,14 +387,14 @@
         const res = await fetch(currentServer + "/api/pages", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
-          body: JSON.stringify({ filename: file.name, title, desc, contentBase64 })
+          body: JSON.stringify({ filename: file.name, title, contentBase64 })
         });
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
           throw new Error(d.error || ("HTTP " + res.status));
         }
         $("overlay-upload").classList.remove("open");
-        $("f-file").value = ""; $("f-title").value = ""; $("f-desc").value = "";
+        $("f-file").value = ""; $("f-title").value = "";
         statusEl.textContent = "✅ Загружено.";
         loadCards();
       } catch (e) {
