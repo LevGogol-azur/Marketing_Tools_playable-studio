@@ -107,4 +107,25 @@ footer { margin-top: 3rem; font-size: 0.85rem; opacity: 0.6; }
   background: rgba(255,255,255,0.14); border: none; color: #fff; font: inherit;
   padding: 0.45rem 0.9rem; border-radius: 8px; cursor: pointer;
 }
-.viewer iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+.viewer-body { position: relative; flex: 1; display: flex; }
+.viewer-body iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+.loader-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+  background: #1c1636; color: #fff;
+}
+.loader-text { font-size: 0.95rem; opacity: 0.85; }
+
+/* Spinners */
+.spinner {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 4px solid rgba(255,255,255,0.2); border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+.spinner-sm {
+  display: inline-block; vertical-align: -2px; margin-right: 0.5rem;
+  width: 1rem; height: 1rem; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

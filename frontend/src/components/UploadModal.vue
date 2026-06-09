@@ -25,7 +25,7 @@
       <div class="actions">
         <button class="btn btn-ghost" @click="$emit('close')">Отмена</button>
         <button class="btn btn-primary" :disabled="busy" @click="submit">
-          {{ busy ? "Загрузка…" : "Загрузить" }}
+          <span v-if="busy" class="spinner-sm"></span>{{ busy ? "Загрузка…" : "Загрузить" }}
         </button>
       </div>
     </div>

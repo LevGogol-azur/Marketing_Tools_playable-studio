@@ -42,6 +42,7 @@
     v-if="viewer.open"
     :title="viewer.title"
     :url="viewer.blobUrl"
+    :loading="viewer.loading"
     @back="closeViewer"
   />
 </template>
@@ -61,7 +62,7 @@ const status = ref("");
 const showUpload = ref(false);
 const showSettings = ref(false);
 const pendingFile = ref(null);
-const viewer = ref({ open: false, title: "", blobUrl: "" });
+const viewer = ref({ open: false, title: "", blobUrl: "", loading: false });
 
 let currentBlob = null;
 
@@ -114,18 +115,20 @@ async function removePage(p) {
 }
 
 async function openViewer(p) {
-  viewer.value = { open: true, title: p.title || p.file, blobUrl: "" };
+  viewer.value = { open: true, title: p.title || p.file, blobUrl: "", loading: true };
   try {
     if (currentBlob) URL.revokeObjectURL(currentBlob);
     currentBlob = await api.fetchPageBlobUrl(server.value, p.file);
     viewer.value.blobUrl = currentBlob;
   } catch (e) {
     status.value = "⚠️ Не удалось открыть страницу: " + e.message;
-    viewer.value = { open: false, title: "", blobUrl: "" };
+    viewer.value = { open: false, title: "", blobUrl: "", loading: false };
+  } finally {
+    viewer.value.loading = false;
   }
 }
 function closeViewer() {
-  viewer.value = { open: false, title: "", blobUrl: "" };
+  viewer.value = { open: false, title: "", blobUrl: "", loading: false };
   if (currentBlob) {
     URL.revokeObjectURL(currentBlob);
     currentBlob = null;
