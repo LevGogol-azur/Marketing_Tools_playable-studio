@@ -84,6 +84,33 @@ export async function movePage(server, file, folder) {
   return data.page;
 }
 
+export async function chatWithBuilder(server, file, messages) {
+  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file) + "/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
+    body: JSON.stringify({ messages }),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || "HTTP " + res.status);
+  }
+  return res.json(); // { reply, proposal? }
+}
+
+export async function applyChanges(server, file, edits, title) {
+  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file) + "/apply", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
+    body: JSON.stringify({ edits, title }),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || "HTTP " + res.status);
+  }
+  const data = await res.json();
+  return data.page;
+}
+
 export async function deletePage(server, file) {
   const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
     method: "DELETE",

@@ -53,6 +53,7 @@
           @open="openViewer(p)"
           @move="openMove(p)"
           @rename="openRenameFile(p)"
+          @chat="chatting = p"
           @remove="removePage(p)"
           @prefetch="onPrefetch(p)"
           @dragstart="draggedPage = p"
@@ -105,6 +106,13 @@
     :loading="viewer.loading"
     @back="closeViewer"
   />
+  <ChatPanel
+    v-if="chatting"
+    :server="server"
+    :page="chatting"
+    @close="chatting = null"
+    @applied="onAiApplied"
+  />
 </template>
 
 <script setup>
@@ -115,6 +123,7 @@ import UploadCard from "./components/UploadCard.vue";
 import UploadModal from "./components/UploadModal.vue";
 import MoveModal from "./components/MoveModal.vue";
 import RenameModal from "./components/RenameModal.vue";
+import ChatPanel from "./components/ChatPanel.vue";
 import SettingsModal from "./components/SettingsModal.vue";
 import PageViewer from "./components/PageViewer.vue";
 import * as api from "./api.js";
@@ -127,6 +136,7 @@ const showSettings = ref(false);
 const pendingFile = ref(null);
 const moving = ref(null);
 const renaming = ref(null);
+const chatting = ref(null);
 const currentFolder = ref(null);
 const draggedPage = ref(null);
 const viewer = ref({ open: false, title: "", blobUrl: "", loading: false });
@@ -285,6 +295,11 @@ async function openViewer(p) {
 }
 function closeViewer() {
   viewer.value = { open: false, title: "", blobUrl: "", loading: false };
+}
+
+async function onAiApplied() {
+  status.value = "✅ AI-вариант создан.";
+  await load();
 }
 
 function openSettings() {

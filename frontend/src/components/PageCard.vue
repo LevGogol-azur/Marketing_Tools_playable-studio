@@ -14,6 +14,7 @@
       <div class="card-meta">Открыть →</div>
     </div>
     <div class="card-actions">
+      <button class="icon-btn ai-btn" title="AI: изменить параметры" aria-label="AI" @click.stop="$emit('chat')">AI</button>
       <button class="icon-btn" title="Переименовать" aria-label="Переименовать" @click.stop="$emit('rename')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
@@ -35,7 +36,7 @@
 import { computed } from "vue";
 
 const props = defineProps({ page: { type: Object, required: true } });
-const emit = defineEmits(["open", "remove", "move", "rename", "prefetch", "dragstart", "dragend"]);
+const emit = defineEmits(["open", "remove", "move", "rename", "chat", "prefetch", "dragstart", "dragend"]);
 
 // Prefetch on a deliberate hover (not a quick pass-through).
 let hoverTimer = null;

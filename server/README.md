@@ -11,6 +11,21 @@ npm install
 npm start            # сервер на http://localhost:3000
 ```
 
+### AI-чат (анализ и правка параметров билдеров)
+
+Эндпоинты `/api/pages/:file/chat` и `/api/pages/:file/apply` используют Claude API.
+Задай ключ перед запуском (в браузер он не передаётся):
+
+```bash
+# PowerShell
+$env:ANTHROPIC_API_KEY = "sk-ant-..."
+npm start
+```
+
+Без ключа сайт работает как раньше, а чат отдаёт понятную ошибку 503. Модель — `claude-opus-4-8`.
+Весь HTML билдера передаётся модели (base64-данные ассетов схлопываются в плейсхолдеры),
+промпт кэшируется, поэтому многоходовой диалог по одному билдеру дешёвый.
+
 В отдельном терминале — публичный туннель через ngrok:
 
 ```bash
@@ -50,6 +65,8 @@ git add ../server-url.json && git commit -m "Update server URL" && git push
 | GET    | `/api/pages`        | Список страниц (manifest)                                  |
 | POST   | `/api/pages`        | Загрузить: `{ filename, title, folder?, contentBase64 }`  |
 | PATCH  | `/api/pages/:file`  | Изменить: `{ folder?, title? }` (перемещение в папку)      |
+| POST   | `/api/pages/:file/chat`  | AI-чат: `{ messages }` → `{ reply, proposal? }`      |
+| POST   | `/api/pages/:file/apply` | Применить правки AI: `{ edits, title? }` → новая копия |
 | DELETE | `/api/pages/:file`  | Удалить страницу                                           |
 | GET    | `/pages/<file>`     | Открыть сохранённую HTML-страницу                          |
 
