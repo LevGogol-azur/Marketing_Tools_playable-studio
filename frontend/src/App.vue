@@ -111,7 +111,8 @@
     :server="server"
     :page="chatting"
     @close="chatting = null"
-    @applied="onAiApplied"
+    @created="onAgentCreated"
+    @open="openViewer"
   />
 </template>
 
@@ -297,8 +298,10 @@ function closeViewer() {
   viewer.value = { open: false, title: "", blobUrl: "", loading: false };
 }
 
-async function onAiApplied() {
-  status.value = "✅ AI-вариант создан.";
+// Agent finished and saved a new -ai copy. Refresh the list so the card appears;
+// the user opens the result via the "Открыть результат" button (-> openViewer).
+async function onAgentCreated(page) {
+  status.value = "✅ AI-вариант создан: " + (page.title || page.file);
   await load();
 }
 
