@@ -3,13 +3,25 @@
 Хранит и отдаёт HTML-страницы (playables). Страницы лежат в `server/pages/`
 (в git не попадают). SPA на GitHub Pages обращается к этому серверу через ngrok.
 
+Код на TypeScript (ESM). В разработке запускается через `tsx` без сборки;
+для прода компилируется `tsc` в `dist/`.
+
 ## Запуск
 
 ```bash
 cd server
 npm install
-npm start            # сервер на http://localhost:3000
+npm run dev          # tsx watch, сервер на http://localhost:3000 (авто-перезагрузка)
 ```
+
+Прод-вариант (компиляция + запуск собранного кода):
+
+```bash
+npm run build        # tsc → dist/
+npm start            # node dist/server.js
+```
+
+`npm run typecheck` — проверка типов без сборки (`tsc --noEmit`).
 
 ### AI-чат (анализ и правка параметров билдеров)
 
@@ -19,7 +31,7 @@ npm start            # сервер на http://localhost:3000
 ```bash
 # PowerShell
 $env:ANTHROPIC_API_KEY = "sk-ant-..."
-npm start
+npm run dev
 ```
 
 Без ключа сайт работает как раньше, а чат отдаёт понятную ошибку 503. Модель — `claude-opus-4-8`.
