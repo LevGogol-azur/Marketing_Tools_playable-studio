@@ -6,24 +6,31 @@
       <div
         class="dropzone"
         :class="{ over: dragOver }"
-        @click="$refs.input.click()"
+        @click="input?.click()"
         @dragover.prevent="dragOver = true"
         @dragleave.prevent="dragOver = false"
         @drop.prevent="onDrop"
       >
         <input ref="input" type="file" accept=".html,.htm,text/html" hidden @change="onPick" />
-        <template v-if="file">Выбрано: <b>{{ file.name }}</b></template>
+        <template v-if="file"
+          >Выбрано: <b>{{ file.name }}</b></template
+        >
         <template v-else>Перетащите .html сюда или нажмите, чтобы выбрать</template>
       </div>
 
       <div class="field">
         <label>Название</label>
-        <input type="text" v-model="title" placeholder="My Playable Builder" />
+        <input v-model="title" type="text" placeholder="My Playable Builder" />
       </div>
 
       <div class="field">
         <label>Папка <span class="opt">(необязательно)</span></label>
-        <input type="text" v-model="folder" list="folders-upload" placeholder="Без папки (корень)" />
+        <input
+          v-model="folder"
+          type="text"
+          list="folders-upload"
+          placeholder="Без папки (корень)"
+        />
         <datalist id="folders-upload">
           <option v-for="f in folders" :key="f" :value="f" />
         </datalist>
@@ -40,26 +47,34 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
-import * as api from "../api.js";
+import * as api from "@/api";
+import { toMessage } from "@/utils/errors";
 
-const props = defineProps({
-  server: { type: String, required: true },
-  initialFile: { type: Object, default: null },
-  initialFolder: { type: String, default: "" },
-  folders: { type: Array, default: () => [] },
-});
-const emit = defineEmits(["close", "uploaded"]);
+const props = withDefaults(
+  defineProps<{
+    server: string;
+    initialFile?: File | null;
+    initialFolder?: string;
+    folders?: string[];
+  }>(),
+  { initialFile: null, initialFolder: "", folders: () => [] },
+);
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "uploaded"): void;
+}>();
 
-const file = ref(null);
+const input = ref<HTMLInputElement | null>(null);
+const file = ref<File | null>(null);
 const title = ref("");
 const folder = ref(props.initialFolder || "");
 const error = ref("");
 const busy = ref(false);
 const dragOver = ref(false);
 
-function setFile(f) {
+function setFile(f: File | null | undefined) {
   if (!f) return;
   if (!/\.html?$/i.test(f.name)) {
     error.value = "Файл должен быть .html";
@@ -70,12 +85,12 @@ function setFile(f) {
   if (!title.value) title.value = f.name.replace(/\.html?$/i, "");
 }
 
-function onPick(e) {
-  setFile(e.target.files[0]);
+function onPick(e: Event) {
+  setFile((e.target as HTMLInputElement).files?.[0]);
 }
-function onDrop(e) {
+function onDrop(e: DragEvent) {
   dragOver.value = false;
-  setFile(e.dataTransfer.files[0]);
+  setFile(e.dataTransfer?.files[0]);
 }
 
 async function submit() {
@@ -99,7 +114,7 @@ async function submit() {
     });
     emit("uploaded");
   } catch (e) {
-    error.value = "Ошибка: " + e.message;
+    error.value = "Ошибка: " + toMessage(e);
   } finally {
     busy.value = false;
   }

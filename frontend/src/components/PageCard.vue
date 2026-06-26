@@ -14,32 +14,76 @@
       <div class="card-meta">Открыть →</div>
     </div>
     <div class="card-actions">
-      <button class="icon-btn ai-btn" title="AI: изменить параметры" aria-label="AI" @click.stop="$emit('chat')">AI</button>
-      <button class="icon-btn" title="Переименовать" aria-label="Переименовать" @click.stop="$emit('rename')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+      <button
+        class="icon-btn ai-btn"
+        title="AI: изменить параметры"
+        aria-label="AI"
+        @click.stop="$emit('chat')"
+      >
+        AI
+      </button>
+      <button
+        class="icon-btn"
+        title="Переименовать"
+        aria-label="Переименовать"
+        @click.stop="$emit('rename')"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
         </svg>
       </button>
-      <button class="icon-btn" title="Переместить в папку" aria-label="Переместить" @click.stop="$emit('move')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <button
+        class="icon-btn"
+        title="Переместить в папку"
+        aria-label="Переместить"
+        @click.stop="$emit('move')"
+      >
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M3 7a2 2 0 0 1 2-2h3.5l2 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         </svg>
       </button>
-      <button class="icon-btn del" title="Удалить" aria-label="Удалить" @click.stop="$emit('remove')">×</button>
+      <button
+        class="icon-btn del"
+        title="Удалить"
+        aria-label="Удалить"
+        @click.stop="$emit('remove')"
+      >
+        ×
+      </button>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
+import type { Page } from "@/types";
 
-const props = defineProps({ page: { type: Object, required: true } });
-const emit = defineEmits(["open", "remove", "move", "rename", "chat", "prefetch", "dragstart", "dragend"]);
+const props = defineProps<{ page: Page }>();
+const emit = defineEmits<{
+  (e: "open" | "remove" | "move" | "rename" | "chat" | "prefetch" | "dragstart" | "dragend"): void;
+}>();
 
 // Prefetch on a deliberate hover (not a quick pass-through).
-let hoverTimer = null;
+let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 function onEnter() {
   hoverTimer = setTimeout(() => emit("prefetch"), 120);
 }

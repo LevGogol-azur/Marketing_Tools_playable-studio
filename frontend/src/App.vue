@@ -21,10 +21,23 @@
           <button class="crumb" @click="currentFolder = null">Builders</button>
           <span class="crumb-sep">/</span>
           <h2>{{ currentFolder }}</h2>
-          <button class="icon-btn head-rename" title="Переименовать папку" @click="openRenameFolder(currentFolder)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+          <button
+            class="icon-btn head-rename"
+            title="Переименовать папку"
+            @click="openRenameFolder(currentFolder)"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
             </svg>
           </button>
           <span class="count">{{ visiblePages.length }}</span>
@@ -116,37 +129,39 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import PageCard from "./components/PageCard.vue";
-import FolderCard from "./components/FolderCard.vue";
-import UploadCard from "./components/UploadCard.vue";
-import UploadModal from "./components/UploadModal.vue";
-import MoveModal from "./components/MoveModal.vue";
-import RenameModal from "./components/RenameModal.vue";
-import ChatPanel from "./components/ChatPanel.vue";
-import SettingsModal from "./components/SettingsModal.vue";
-import PageViewer from "./components/PageViewer.vue";
-import * as api from "./api.js";
+import PageCard from "@/components/PageCard.vue";
+import FolderCard from "@/components/FolderCard.vue";
+import UploadCard from "@/components/UploadCard.vue";
+import UploadModal from "@/components/UploadModal.vue";
+import MoveModal from "@/components/MoveModal.vue";
+import RenameModal from "@/components/RenameModal.vue";
+import ChatPanel from "@/components/ChatPanel.vue";
+import SettingsModal from "@/components/SettingsModal.vue";
+import PageViewer from "@/components/PageViewer.vue";
+import * as api from "@/api";
+import { toMessage } from "@/utils/errors";
+import type { FolderEntry, Page, RenameState, ViewerState } from "@/types";
 
 const server = ref("");
-const pages = ref([]);
+const pages = ref<Page[]>([]);
 const status = ref("");
 const showUpload = ref(false);
 const showSettings = ref(false);
-const pendingFile = ref(null);
-const moving = ref(null);
-const renaming = ref(null);
-const chatting = ref(null);
-const currentFolder = ref(null);
-const draggedPage = ref(null);
-const viewer = ref({ open: false, title: "", blobUrl: "", loading: false });
+const pendingFile = ref<File | null>(null);
+const moving = ref<Page | null>(null);
+const renaming = ref<RenameState | null>(null);
+const chatting = ref<Page | null>(null);
+const currentFolder = ref<string | null>(null);
+const draggedPage = ref<Page | null>(null);
+const viewer = ref<ViewerState>({ open: false, title: "", blobUrl: "", loading: false });
 
-const folderOf = (p) => (p.folder || "").trim();
+const folderOf = (p: Page): string => (p.folder || "").trim();
 
 // Distinct folders (derived from page entries) with counts, sorted.
-const folderList = computed(() => {
-  const counts = new Map();
+const folderList = computed<FolderEntry[]>(() => {
+  const counts = new Map<string, number>();
   for (const p of pages.value) {
     const f = folderOf(p);
     if (f) counts.set(f, (counts.get(f) || 0) + 1);
@@ -161,7 +176,7 @@ const folderNames = computed(() => folderList.value.map((f) => f.name));
 const visiblePages = computed(() =>
   currentFolder.value
     ? pages.value.filter((p) => folderOf(p) === currentFolder.value)
-    : pages.value.filter((p) => !folderOf(p))
+    : pages.value.filter((p) => !folderOf(p)),
 );
 
 async function load() {
@@ -179,12 +194,13 @@ async function load() {
     }
   } catch (e) {
     status.value =
-      "⚠️ Не удалось связаться с сервером (" + e.message +
+      "⚠️ Не удалось связаться с сервером (" +
+      toMessage(e) +
       "). Проверь, что сервер и ngrok запущены, и адрес указан верно.";
   }
 }
 
-function openUpload(file = null) {
+function openUpload(file: File | null = null) {
   if (!server.value) {
     openSettings();
     return;
@@ -196,7 +212,7 @@ function closeUpload() {
   showUpload.value = false;
   pendingFile.value = null;
 }
-function onDropped(file) {
+function onDropped(file: File) {
   openUpload(file);
 }
 async function onUploaded() {
@@ -205,11 +221,11 @@ async function onUploaded() {
   await load();
 }
 
-function openMove(p) {
+function openMove(p: Page) {
   moving.value = p;
 }
 
-function openRenameFile(p) {
+function openRenameFile(p: Page) {
   renaming.value = {
     kind: "file",
     page: p,
@@ -218,7 +234,7 @@ function openRenameFile(p) {
     initial: p.title || p.file,
   };
 }
-function openRenameFolder(name) {
+function openRenameFolder(name: string) {
   renaming.value = {
     kind: "folder",
     folder: name,
@@ -227,7 +243,7 @@ function openRenameFolder(name) {
     initial: name,
   };
 }
-async function onRename(newValue) {
+async function onRename(newValue: string) {
   const r = renaming.value;
   if (!r) return;
   try {
@@ -244,7 +260,7 @@ async function onRename(newValue) {
     renaming.value = null;
     await load();
   } catch (e) {
-    status.value = "⚠️ Не удалось переименовать: " + e.message;
+    status.value = "⚠️ Не удалось переименовать: " + toMessage(e);
   }
 }
 async function onMoved() {
@@ -254,41 +270,41 @@ async function onMoved() {
 }
 
 // Drag a builder card onto a folder card to move it there.
-async function moveDragged(folder) {
+async function moveDragged(folder: string) {
   const p = draggedPage.value;
   draggedPage.value = null;
   if (!p || folderOf(p) === folder) return;
   try {
     await api.movePage(server.value, p.file, folder);
-    status.value = '«' + (p.title || p.file) + '» → ' + folder;
+    status.value = "«" + (p.title || p.file) + "» → " + folder;
     await load();
   } catch (e) {
-    status.value = "⚠️ Не удалось переместить: " + e.message;
+    status.value = "⚠️ Не удалось переместить: " + toMessage(e);
   }
 }
 
-async function removePage(p) {
+async function removePage(p: Page) {
   if (!confirm('Удалить "' + (p.title || p.file) + '"?')) return;
   try {
     await api.deletePage(server.value, p.file);
     status.value = "Удалено: " + (p.title || p.file);
     await load();
   } catch (e) {
-    status.value = "⚠️ Не удалось удалить: " + e.message;
+    status.value = "⚠️ Не удалось удалить: " + toMessage(e);
   }
 }
 
-function onPrefetch(p) {
+function onPrefetch(p: Page) {
   api.prefetchPage(server.value, p.file);
 }
 
-async function openViewer(p) {
+async function openViewer(p: Page) {
   viewer.value = { open: true, title: p.title || p.file, blobUrl: "", loading: true };
   try {
     // Blob URLs are cached for the session by api.js, so re-opening is instant.
     viewer.value.blobUrl = await api.fetchPageBlobUrl(server.value, p.file);
   } catch (e) {
-    status.value = "⚠️ Не удалось открыть страницу: " + e.message;
+    status.value = "⚠️ Не удалось открыть страницу: " + toMessage(e);
     viewer.value = { open: false, title: "", blobUrl: "", loading: false };
   } finally {
     viewer.value.loading = false;
@@ -300,7 +316,7 @@ function closeViewer() {
 
 // Agent finished and saved a new -ai copy. Refresh the list so the card appears;
 // the user opens the result via the "Открыть результат" button (-> openViewer).
-async function onAgentCreated(page) {
+async function onAgentCreated(page: Page) {
   status.value = "✅ AI-вариант создан: " + (page.title || page.file);
   await load();
 }
@@ -308,7 +324,7 @@ async function onAgentCreated(page) {
 function openSettings() {
   showSettings.value = true;
 }
-function saveServer(url) {
+function saveServer(url: string) {
   api.setOverride(url);
   showSettings.value = false;
   load();

@@ -4,10 +4,10 @@
       <h2>Адрес сервера</h2>
       <div class="field">
         <label>Публичный URL (ngrok)</label>
-        <input type="url" v-model="url" placeholder="https://xxxx.ngrok-free.app" />
+        <input v-model="url" type="url" placeholder="https://xxxx.ngrok-free.app" />
         <div class="hint">
-          Обычно адрес берётся автоматически из <code>server-url.json</code> в репозитории.
-          Это поле — локальный запасной вариант (если файла нет).
+          Обычно адрес берётся автоматически из <code>server-url.json</code> в репозитории. Это поле
+          — локальный запасной вариант (если файла нет).
         </div>
       </div>
       <div class="error">{{ error }}</div>
@@ -19,11 +19,14 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 
-const props = defineProps({ current: { type: String, default: "" } });
-const emit = defineEmits(["close", "save"]);
+const props = withDefaults(defineProps<{ current?: string }>(), { current: "" });
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "save", url: string): void;
+}>();
 
 const url = ref(props.current || "");
 const error = ref("");
