@@ -15,20 +15,28 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from "vue";
 
-const props = defineProps({
-  title: { type: String, default: "" },
-  url: { type: String, default: "" },
-  loading: { type: Boolean, default: false },
-});
-defineEmits(["back"]);
+const props = withDefaults(
+  defineProps<{
+    title?: string;
+    url?: string;
+    loading?: boolean;
+  }>(),
+  { title: "", url: "", loading: false },
+);
+defineEmits<{ (e: "back"): void }>();
 
 const frameLoaded = ref(false);
 
 // New page → reset the iframe-loaded flag so the loader shows again.
-watch(() => props.url, () => { frameLoaded.value = false; });
+watch(
+  () => props.url,
+  () => {
+    frameLoaded.value = false;
+  },
+);
 
 // Loader is shown while fetching the blob, and afterwards until the iframe finishes rendering.
 const showLoader = computed(() => props.loading || !props.url || !frameLoaded.value);

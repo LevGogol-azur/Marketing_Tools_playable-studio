@@ -12,15 +12,18 @@
   </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 
-const emit = defineEmits(["click", "files"]);
+const emit = defineEmits<{
+  (e: "click"): void;
+  (e: "files", file: File): void;
+}>();
 const dragOver = ref(false);
 
-function onDrop(e) {
+function onDrop(e: DragEvent) {
   dragOver.value = false;
-  const f = e.dataTransfer.files[0];
+  const f = e.dataTransfer?.files[0];
   if (f) emit("files", f);
 }
 </script>

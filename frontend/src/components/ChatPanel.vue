@@ -9,10 +9,10 @@
         <button class="icon-btn" title="Закрыть" @click="$emit('close')">×</button>
       </header>
 
-      <div class="chat-body" ref="bodyEl">
+      <div ref="bodyEl" class="chat-body">
         <div v-if="!messages.length" class="chat-hint">
-          Опишите, что изменить в этом билдере — например: «сделай надпись
-          вертикальной» или «поменяй CTA на “Играть”». Агент создаст новый AI-вариант.
+          Опишите, что изменить в этом билдере — например: «сделай надпись вертикальной» или
+          «поменяй CTA на “Играть”». Агент создаст новый AI-вариант.
         </div>
 
         <template v-for="(m, i) in messages" :key="i">
@@ -34,33 +34,33 @@
       </div>
 
       <form class="chat-input" @submit.prevent="send">
-        <input
-          v-model="draft"
-          type="text"
-          placeholder="Что изменить в билдере…"
-          :disabled="busy"
-        />
+        <input v-model="draft" type="text" placeholder="Что изменить в билдере…" :disabled="busy" />
         <button class="btn btn-primary" type="submit" :disabled="busy || !draft.trim()">→</button>
       </form>
     </aside>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, nextTick } from "vue";
-import * as api from "../api.js";
+import * as api from "@/api";
+import { toMessage } from "@/utils/errors";
+import type { ChatMessage, Page } from "@/types";
 
-const props = defineProps({
-  server: { type: String, required: true },
-  page: { type: Object, required: true },
-});
-const emit = defineEmits(["close", "open", "created"]);
+const props = defineProps<{
+  server: string;
+  page: Page;
+}>();
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "open" | "created", page: Page): void;
+}>();
 
-const messages = ref([]); // { role, content, page? }
+const messages = ref<ChatMessage[]>([]);
 const draft = ref("");
 const busy = ref(false);
 const error = ref("");
-const bodyEl = ref(null);
+const bodyEl = ref<HTMLElement | null>(null);
 
 async function scrollDown() {
   await nextTick();
@@ -91,7 +91,7 @@ async function send() {
       emit("created", newPage); // let the parent refresh the list
     }
   } catch (e) {
-    error.value = "⚠️ " + e.message;
+    error.value = "⚠️ " + toMessage(e);
   } finally {
     busy.value = false;
     scrollDown();

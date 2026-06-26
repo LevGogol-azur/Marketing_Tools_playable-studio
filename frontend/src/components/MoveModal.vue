@@ -5,11 +5,13 @@
       <p class="move-sub">«{{ page.title || page.file }}»</p>
       <div class="field">
         <label>Папка</label>
-        <input type="text" v-model="folder" list="folders-move" placeholder="Без папки (корень)" />
+        <input v-model="folder" type="text" list="folders-move" placeholder="Без папки (корень)" />
         <datalist id="folders-move">
           <option v-for="f in folders" :key="f" :value="f" />
         </datalist>
-        <div class="hint">Оставьте пустым, чтобы переместить в корень. Можно ввести новое имя папки.</div>
+        <div class="hint">
+          Оставьте пустым, чтобы переместить в корень. Можно ввести новое имя папки.
+        </div>
       </div>
       <div class="error">{{ error }}</div>
       <div class="actions">
@@ -22,16 +24,24 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
-import * as api from "../api.js";
+import * as api from "@/api";
+import { toMessage } from "@/utils/errors";
+import type { Page } from "@/types";
 
-const props = defineProps({
-  server: { type: String, required: true },
-  page: { type: Object, required: true },
-  folders: { type: Array, default: () => [] },
-});
-const emit = defineEmits(["close", "moved"]);
+const props = withDefaults(
+  defineProps<{
+    server: string;
+    page: Page;
+    folders?: string[];
+  }>(),
+  { folders: () => [] },
+);
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "moved"): void;
+}>();
 
 const folder = ref(props.page.folder || "");
 const error = ref("");
@@ -44,7 +54,7 @@ async function save() {
     await api.movePage(props.server, props.page.file, folder.value.trim());
     emit("moved");
   } catch (e) {
-    error.value = "Ошибка: " + e.message;
+    error.value = "Ошибка: " + toMessage(e);
   } finally {
     busy.value = false;
   }

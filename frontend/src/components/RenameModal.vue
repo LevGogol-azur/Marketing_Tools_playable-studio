@@ -4,7 +4,7 @@
       <h2>{{ heading }}</h2>
       <div class="field">
         <label>{{ label }}</label>
-        <input ref="inp" type="text" v-model="value" @keyup.enter="save" />
+        <input ref="inp" v-model="value" type="text" @keyup.enter="save" />
       </div>
       <div class="error">{{ error }}</div>
       <div class="actions">
@@ -15,19 +15,25 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 
-const props = defineProps({
-  heading: { type: String, default: "Переименовать" },
-  label: { type: String, default: "Название" },
-  initial: { type: String, default: "" },
-});
-const emit = defineEmits(["close", "save"]);
+const props = withDefaults(
+  defineProps<{
+    heading?: string;
+    label?: string;
+    initial?: string;
+  }>(),
+  { heading: "Переименовать", label: "Название", initial: "" },
+);
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "save", value: string): void;
+}>();
 
 const value = ref(props.initial);
 const error = ref("");
-const inp = ref(null);
+const inp = ref<HTMLInputElement | null>(null);
 
 function save() {
   const v = value.value.trim();
