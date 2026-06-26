@@ -5,14 +5,27 @@
   "type": "module",
   "description": "Stores and serves Playable Studio HTML pages; exposed publicly via ngrok.",
   "scripts": {
-    "start": "node server.js",
+    "dev": "tsx watch --env-file=.env server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "tunnel": "ngrok http 3000",
-    "publish-url": "node update-url.mjs"
+    "publish-url": "tsx update-url.ts",
+    "agent:build": "docker build -t playable-agent agent",
+    "agent": "tsx --env-file=.env agent-cli.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.69.0",
+    "@anthropic-ai/claude-agent-sdk": "^0.3.191",
     "compression": "^1.7.5",
     "cors": "^2.8.5",
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   }
 }

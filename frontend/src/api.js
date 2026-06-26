@@ -7,116 +7,146 @@ const NGROK_HEADERS = { "ngrok-skip-browser-warning": "1" };
 const trim = (u) => (u || "").trim().replace(/\/+$/, "");
 
 export function getOverride() {
-  return trim(localStorage.getItem(SERVER_KEY));
+	return trim(localStorage.getItem(SERVER_KEY));
 }
 export function setOverride(url) {
-  localStorage.setItem(SERVER_KEY, trim(url));
+	localStorage.setItem(SERVER_KEY, trim(url));
 }
 
 // Resolve the server URL. Priority:
-//   1. ?server=URL query param (dev/testing)
-//   2. repo-managed server-url.json (central — automatic for everyone)
-//   3. local override saved via the ⚙ Сервер dialog
+// 1. ?server=URL query param (dev/testing)
+// 2. repo-managed server-url.json (central — automatic for everyone)
+// 3. local override saved via the ⚙ Сервер dialog
 export async function resolveServer() {
-  const q = trim(new URLSearchParams(location.search).get("server"));
-  if (q) {
-    setOverride(q);
-    return q;
-  }
-  try {
-    const res = await fetch("server-url.json?t=" + Date.now(), { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.url) return trim(data.url);
-    }
-  } catch (_) {
-    /* fall through to local override */
-  }
-  return getOverride();
+	const q = trim(new URLSearchParams(location.search).get("server"));
+	if (q) {
+		setOverride(q);
+		return q;
+	}
+	try {
+		const res = await fetch("server-url.json?t=" + Date.now(), { cache: "no-store" });
+		if (res.ok) {
+			const data = await res.json();
+			if (data && data.url) return trim(data.url);
+		}
+	} catch (_) {
+		/* fall through to local override */
+	}
+	return getOverride();
 }
 
 export async function listPages(server) {
-  const res = await fetch(server + "/api/pages", { cache: "no-store", headers: NGROK_HEADERS });
-  if (!res.ok) throw new Error("HTTP " + res.status);
-  const data = await res.json();
-  return (data && data.pages) || [];
+	const res = await fetch(server + "/api/pages", { cache: "no-store", headers: NGROK_HEADERS });
+	if (!res.ok) throw new Error("HTTP " + res.status);
+	const data = await res.json();
+	return (data && data.pages) || [];
 }
 
 export async function uploadPage(server, { filename, title, folder, contentBase64 }) {
-  const res = await fetch(server + "/api/pages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
-    body: JSON.stringify({ filename, title, folder, contentBase64 }),
-  });
-  if (!res.ok) {
-    const d = await res.json().catch(() => ({}));
-    throw new Error(d.error || "HTTP " + res.status);
-  }
-  const data = await res.json();
-  return data.page;
+	const res = await fetch(server + "/api/pages", {
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
+		body: JSON.stringify({ filename, title, folder, contentBase64 }),
+	});
+	if (!res.ok) {
+		const d = await res.json().catch(() => ({}));
+		throw new Error(d.error || "HTTP " + res.status);
+	}
+	const data = await res.json();
+	return data.page;
 }
 
 export async function renamePage(server, file, title) {
-  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
-    body: JSON.stringify({ title }),
-  });
-  if (!res.ok) {
-    const d = await res.json().catch(() => ({}));
-    throw new Error(d.error || "HTTP " + res.status);
-  }
-  const data = await res.json();
-  return data.page;
+	const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
+		body: JSON.stringify({ title }),
+	});
+	if (!res.ok) {
+		const d = await res.json().catch(() => ({}));
+		throw new Error(d.error || "HTTP " + res.status);
+	}
+	const data = await res.json();
+	return data.page;
 }
 
 export async function movePage(server, file, folder) {
-  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
-    body: JSON.stringify({ folder }),
-  });
-  if (!res.ok) {
-    const d = await res.json().catch(() => ({}));
-    throw new Error(d.error || "HTTP " + res.status);
-  }
-  const data = await res.json();
-  return data.page;
+	const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
+		body: JSON.stringify({ folder }),
+	});
+	if (!res.ok) {
+		const d = await res.json().catch(() => ({}));
+		throw new Error(d.error || "HTTP " + res.status);
+	}
+	const data = await res.json();
+	return data.page;
 }
 
-export async function chatWithBuilder(server, file, messages) {
-  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file) + "/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
-    body: JSON.stringify({ messages }),
-  });
-  if (!res.ok) {
-    const d = await res.json().catch(() => ({}));
-    throw new Error(d.error || "HTTP " + res.status);
-  }
-  return res.json(); // { reply, proposal? }
+// Parse one SSE chunk (the text between two blank lines) into { type, data }.
+// `type` is the `event:` field (defaults to "message"); `data` joins all
+// `data:` lines. Returns null for an empty/blank chunk so callers can skip it.
+function parseSseChunk(chunk) {
+	if (!chunk.trim()) return null;
+	let type = "message";
+	const dataLines = [];
+	for (const line of chunk.split("\n")) {
+		if (line.startsWith("event:")) type = line.slice(6).trim();
+		else if (line.startsWith("data:")) dataLines.push(line.slice(5).replace(/^ /, ""));
+	}
+	return { type, data: dataLines.join("\n") };
 }
 
-export async function applyChanges(server, file, edits, title) {
-  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file) + "/apply", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
-    body: JSON.stringify({ edits, title }),
-  });
-  if (!res.ok) {
-    const d = await res.json().catch(() => ({}));
-    throw new Error(d.error || "HTTP " + res.status);
-  }
-  const data = await res.json();
-  return data.page;
+// Run the sandboxed agent on a builder. Streams the agent's text via onTextCallback as
+// it arrives; resolves with the new -ai page entry ({ file, title, folder,
+// uploaded }) once saved server-side — page.file is what you open in the viewer.
+export async function runAgent(server, file, prompt, { onTextCallback, signal } = {}) {
+	const res = await fetch(server + "/api/pages/" + encodeURIComponent(file) + "/agent", {
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...NGROK_HEADERS },
+		body: JSON.stringify({ prompt }),
+		signal,
+	});
+	if (!res.ok) {
+		const d = await res.json().catch(() => ({}));
+		throw new Error(d.error || "HTTP " + res.status);
+	}
+
+	const reader = res.body.getReader();
+	const dec = new TextDecoder();
+	let buf = "";
+	let page = null;
+	let errMsg = null;
+
+	while (true) {
+		const { value, done } = await reader.read();
+		if (done) break;
+		buf += dec.decode(value, { stream: true });
+
+		const chunks = buf.split("\n\n");
+		buf = chunks.pop(); // keep the partial tail
+		for (const chunk of chunks) {
+			const parsed = parseSseChunk(chunk);
+			if (!parsed) continue;
+			const { type, data } = parsed;
+			if (type === "done") page = JSON.parse(data);
+			else if (type === "error") {
+				try { errMsg = JSON.parse(data); } catch { errMsg = data || "error"; }
+			} else if (onTextCallback) onTextCallback(data);
+		}
+	}
+
+	if (errMsg) throw new Error(errMsg);
+	return page; // { file, title, folder, uploaded } | null
 }
 
 export async function deletePage(server, file) {
-  const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
-    method: "DELETE",
-    headers: NGROK_HEADERS,
-  });
-  if (!res.ok) throw new Error("HTTP " + res.status);
+	const res = await fetch(server + "/api/pages/" + encodeURIComponent(file), {
+		method: "DELETE",
+		headers: NGROK_HEADERS,
+	});
+	if (!res.ok) throw new Error("HTTP " + res.status);
 }
 
 // Session cache of fetched playables. Filenames are unique and never overwritten,
@@ -126,39 +156,39 @@ const inflight = new Map(); // file -> Promise<blobUrl>
 
 // Fetch a page with the skip-warning header and return a blob URL (iframe nav can't set headers).
 export async function fetchPageBlobUrl(server, file) {
-  if (blobCache.has(file)) return blobCache.get(file);
-  if (inflight.has(file)) return inflight.get(file);
+	if (blobCache.has(file)) return blobCache.get(file);
+	if (inflight.has(file)) return inflight.get(file);
 
-  const p = (async () => {
-    const res = await fetch(server + "/pages/" + encodeURIComponent(file), {
-      headers: NGROK_HEADERS,
-    });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    blobCache.set(file, url);
-    return url;
-  })();
+	const p = (async () => {
+		const res = await fetch(server + "/pages/" + encodeURIComponent(file), {
+			headers: NGROK_HEADERS,
+		});
+		if (!res.ok) throw new Error("HTTP " + res.status);
+		const blob = await res.blob();
+		const url = URL.createObjectURL(blob);
+		blobCache.set(file, url);
+		return url;
+	})();
 
-  inflight.set(file, p);
-  try {
-    return await p;
-  } finally {
-    inflight.delete(file);
-  }
+	inflight.set(file, p);
+	try {
+		return await p;
+	} finally {
+		inflight.delete(file);
+	}
 }
 
 // Warm the cache ahead of a click (e.g. on hover). Fire-and-forget.
 export function prefetchPage(server, file) {
-  if (!server || blobCache.has(file) || inflight.has(file)) return;
-  fetchPageBlobUrl(server, file).catch(() => {});
+	if (!server || blobCache.has(file) || inflight.has(file)) return;
+	fetchPageBlobUrl(server, file).catch(() => { });
 }
 
 export function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.slice(reader.result.indexOf(",") + 1));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = () => resolve(reader.result.slice(reader.result.indexOf(",") + 1));
+		reader.onerror = reject;
+		reader.readAsDataURL(file);
+	});
 }
